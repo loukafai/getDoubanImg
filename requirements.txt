@@ -1,0 +1,5 @@
+streamlit
+requests
+beautifulsoup4
+pandas
+2.  **上傳到 GitHub**：
