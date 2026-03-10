@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>我的簡易豆瓣爬蟲工具</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        #result { margin-top: 20px; border: 1px solid #ddd; padding: 15px; display: none; }
+        img { max-width: 200px; display: block; margin-bottom: 10px; }
+        .loading { color: blue; }
+    </style>
+</head>
+<body>
+
+    <h2>🎥 電影資訊抓取器</h2>
+    <input type="text" id="doubanUrl" placeholder="貼上豆瓣網址" style="width: 300px;">
+    <button onclick="fetchMovie()">抓取資料</button>
+
+    <div id="status"></div>
+    <div id="result">
+        <img id="moviePoster" src="" alt="海報">
+        <h3 id="movieTitle"></h3>
+        <p id="movieInfo"></p>
+        <pre id="rawFormat" style="background: #f4f4f4; padding: 10px; font-size: 12px;"></pre>
+    </div>
+
+    <script>
+        async function fetchMovie() {
+            const url = document.getElementById('doubanUrl').value;
+            const status = document.getElementById('status');
+            const resultDiv = document.getElementById('result');
+
+            if (!url) return alert("請輸入網址");
+
+            status.innerText = "⏳ 正在透過 PT-Gen 抓取中...";
+            status.className = "loading";
+            resultDiv.style.display = "none";
+
+            try {
+                // 引用 PT-Gen-Refactor 的 API 接口
+                // 注意：這裡建議使用你自己部署的地址，Demo 地址可能有流量限制
+                const apiAddr = `https://ptgen.app/api/resource?url=${encodeURIComponent(url)}`;
+                
+                const response = await fetch(apiAddr);
+                const data = await response.json();
+
+                if (data && data.success) {
+                    status.innerText = "✅ 抓取成功！";
+                    resultDiv.style.display = "block";
+                    
+                    // 填充資料
+                    document.getElementById('moviePoster').src = data.poster;
+                    document.getElementById('movieTitle').innerText = data.title;
+                    document.getElementById('movieInfo').innerText = `年份：${data.year} / 評分：${data.rating}`;
+                    
+                    // 顯示 PT 格式的文字介紹 (專案的核心特色)
+                    document.getElementById('rawFormat').innerText = data.format;
+                } else {
+                    status.innerText = "❌ 抓取失敗：" + (data.error || "未知錯誤");
+                }
+            } catch (err) {
+                status.innerText = "❌ 連線 API 發生錯誤";
+                console.error(err);
+            }
+        }
+    </script>
+</body>
+</html>
